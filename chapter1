@@ -1,0 +1,298 @@
+
+图形化界面的基础--创建一个用户界面
+
+Kivy带着一个简单而又野心勃勃的目标，作为PyMT（一个多点触摸的library库）的继任者而，致力于跨平台的实现：包括Linux 、Windows、Mac OS X、Android、iOS（http://txzone.net/2011/01/kivy-next-pymt-on-android-step-1-done/）
+
+This support is being extended to Raspberry Pi thanks to a founding campaign started by Mathieu Virbel, the creator of Kivy 
+
+幸亏 Mathieu Virbel （kivy的创始人）发起的一场运动，这项支持正在被延生到
+
+Raspberry Pi上。Kivy在2011年的EuroPython上被作为一个python的图形化界面框架公之于众。
+
+
+那么现在让我们来利用他强大而有趣的组件中的一部分—Kivy language（.kv），来创建一个用户界面吧。Kivy language帮助我们理解陈述中的逻辑。它有着基本的工程师理念，帮助你保持代码简洁。尽管如此，我们也可以完全使用Python，而Kivy仅作为一个Library库，来创建一个Kivy的应用。后面的章节中我们将学到那些概念，因为他们允许我们动态的修改接口。
+
+
+这一章覆盖了 用Kivy创建一个图形化界面所需要的所有知识。后面你将能够创建出几乎所有想做出来的界面，并且让他们对界面做出反应。下面是你将要学习的技能列表：
+
+1. 如何启动一个Kivy应用
+2. Kivy语法
+3. 创建并使用 widgets（一个图形化界面的组件）
+4.了解widgets的基本属性和变量
+5.Fixd（固定的），proportional（成比例的），absolute（绝对的），relative（相对的） 4种坐标系。
+6.通过layouts布局 组织图形化界面
+7.为了实现一个灵活的图形化界面 所给出的几条建议。
+
+
+有别于Python ，这一章需要理解一些面向对象编程的概念。（参考 http://en.wikipedia.org/wiki/Object-oriented_programming），特别是继承和多态（http://en.wikipedia.org/wiki/Instance_%28computer_science%29%29）。
+这本书的例子可以在 Kivy 1.7.0或之上的版本中使用。这一章结束，我们将能够创建一个图形化界面，这个界面可以模仿铅笔和纸进行素描。
+
+
+Hello World
+
+现在让我们来开始自己的第一份代码，国际惯例：Hello World。
+   1. # File name: hello.py
+   2. import kivy
+   3. kivy.require('1.7.0')
+   4.
+   5. from kivy.app import App
+   6. from kivy.uix.button import Label
+   7.
+   8. class HelloApp(App):
+   9.   def build(self):
+   10.     return Label(text='Hello World!')
+   11.
+   12. if __name__=="__main__":
+   13.   HelloApp().run()
+
+这仅仅是一个Python代码，但启动一个kivy程序不同于启动其他的Python应用。为了运行这个代码，你只需要打开一个命令行，输入命令：
+python  hello.py —size=150x100 (—size 是一个用来说明屏幕尺寸的参数 )
+在前面的代码中 第二三行用来检查你电脑上安装的是否是对应的Kivy版本。
+Tips：
+如果你使用的是特定的一些旧版本（例如1.6.0） 可能会出现一些异常，如果你使用最近的版本就不会出现这些异常，虽然已经设计过一些向后兼容的东西，但并不是每次都有效，所以但你使用最新的一些版本的时候都有可能遇到一些问题。
+在这本书的大部分例子中我们都漏掉了一些声明，但是你可以在网上下载的代码中找到。
+这个程序使用了两个Kivy中的类，在第五行和第六行，分别是 App 和Label。
+App类是Kivy程序的开始点，下面的截图展示了一个含有文字Label标签的窗口。
+			48EB52C2-FFB2-4D4A-802C-3AAD56D5D17F.png
+我们使用App的方法是通过继承。App变成了HelloApp这个类的父类，这意味着HelloApp中除了在第八行和第九行定义的属性和方法之外，还拥有了所有App类的属性和方法。
+	
+在这个例子中，HelloApp的内部仅仅调用App众多方法中的其中一个：build（self）。这个方法返回window 的内容。	在这个例子中一个简单的Label标签，上面写着Hello World！。最后第13行创建了一个HelloApp的实例对象 然后运行。
+
+
+那么，Kivy仅仅只是	Python的另外一个库吗？ 好吧，是的。但作为库的一部分，Kivy还提供了自己的语法 去区分其他的逻辑。例如 你可以将上面的Python代码写在两个不同的文件里，第一个文件可以包含如下内容：
+   14. # File name: hello2.py
+   15. from kivy.app import App
+   16. from kivy.uix.button import Label
+   17.
+   18. class Hello2App(App):
+   19.   def build(self):
+   20.     return Label()
+   21.
+   22. if __name__=="__main__":
+   23.   Hello2App().run()
+这份代码hello2.py和第一份hello.py非常相似，他们的不同点是在第20行。
+没有Hello World 的内容，取而代之的是第二个文件hello2.kv，其包含了kivy的语法。					
+   24. # File name: hello2.kv
+   25. #:kivy 1.7.0
+   26. <Label>:
+   27.   text: 'Hello World!’
+
+那么Python 或者Kivy是怎么知道这些文件是有关联的呢？
+在初期这一点非常重要且具有迷惑性。关键在于App子类也就是HelloApp类的 名字。
+
+Tips：
+App子类的名字的前半部必须和Kivy文件的名字相符。例如如果App子类的名字是FooApp（App），那么文件的名字必须是foo.kv,而且它必须和主文件放在同一个目录下。（这一点决定了 App的  run（）方法）
+
+一旦这一点被考虑进去，那么这个例子就可以和前面hello.py一样运行了。这是你第一次使用kivy language，所以我们可以慢点来。 #:kivy 1.7.0  告诉我们Python需要的最低Kivy版本。他在kivy language 的头部，这本书中我们可能会疏漏这个版本号，但是在你的项目中 记得一定要加上他。
+<Label>标签 26行，声明我们将要修改 标签类，将它里面的文字改为’hello world！’  位于第27行。这段代码产生和前面截图一样的输出。从纯粹的python中导入Kivy库中的类，可以解决几乎所有的问题，就像我们在前面的第一个例子里做的一样。这种方式能抽离逻辑 并且让代码简洁。因此这本书会解释所有 通过Kivy language 呈现程序的方式，除了动态的添加元素。
+你可能会担心 对于Label类的修改会影响所有Label的所有实例对象，因为它们都将含有’hello world’ 两个字，这种担心是有理由的。因此，在接下来的环节，我们将直接修改实例对象的属性 和方法，而不是去修改这个类。
+
+Basic Widgets—Labels and buttons
+在前面的环节中我们已经使用了label类，这是属于Kivy所提供的widgets类中的一部分。
+Widgets是一些我们过去常常用于和用户交互的 小块 界面。Kivy中又一整套的Widgets控件，包括button ，label，checkboxes，dropdowns等等。你可以在Kivy  的api中找到他们（http://kivy.org/docs/api-kivy.html），位于kivy.uix这个包里面。相比例2中直接使用Kivy中的widgets类，更好的方法其实是创建你自己的Widgets对象，下面的代码将教会你如何 通过继承来做到这一点。					
+   28. # File name: widgets.py
+   29. from kivy.app import App
+   30. from kivy.uix.widget import Widget
+   31.
+   32. class MyWidget(Widget):
+   33.   pass
+   34.
+   35. class WidgetsApp(App):
+   36.   def build(self):
+   37.     return MyWidget()
+   38.
+   39. if __name__=="__main__":
+   40.   WidgetsApp().run()
+在上面代码中的32行，我们通过继承widgets 创建了自己的子类 MyWidgets
+然后在37行，我们直接修改MyWidgets而不是像hello2.py中那样修改框架中的Label类，	下面是对应的Kivy language 代码（widgets.kv）
+
+41. # File name: widgets.kv
+42. <MyWidget>:
+43.  Button:
+44.     text: ‘Hello'
+45.     pos: 0, 100	
+46.     size: 100, 50
+47.     color: .8,.9,0,1
+48.     font_size: 32
+49. Button:
+50.     text: ‘World!
+51.     pos: 100,0
+52.     size: 100, 50
+53.     color: .8,.9,0,1
+54.     font_size: 32
+
+
+我们现在使用buttons替代labels，Kivy中的大部分基础的widgets控件运行都是一句的同样的原理。实际上buttons是labels的一个子类，它包含更多的属性，例如背景颜色。
+对比hello2.kv中26行的标记(<Label>: )和Widgets.kv中的第43行的（Button：）标记  前者可以看做是一个类，而后者可以看做是一个对象。我们只是定义了MyWidgets这个类有两个Button对象，然后给这两个对象设置属性（颜色属性是  rgba模式，分别代表红色 绿色 蓝色和透明）。
+size和pos属性 都是由常量值组成，单位是像素点。
+
+Tips：
+需要注意的是，这里的坐标（0，0）指的是底部最左边。也就是 笛卡尔坐标系。许多其他的语言（包括css）使用顶部最左边来表示（0，0）坐标，所以这一点需要注意。
+
+下面的截图显示了widgets.py和widgets.kv文件 的输出，白色的字是一些帮助性的注释。
+B6B31B02-0EF8-4B17-9786-9429E50AEA4D.png
+
+前面 widgets.kv中的代码可以证明两件事情。第一件事情是	 buttons中有许多重复的属性，例如pos，color，font_size，让我们来坐一个自定义的button吧 就像前面做自定义的widget一样。 第二件事情是固定的position 对于用户体验有害无益，因为它无法适配界面尺寸。我们来让这个widgets更加精简吧。
+					
+   55. # File name: widgets2.kv
+
+   56. <MyButton@Button>:
+
+  58. font_size: 32
+
+   57. color: .8,.9,0,1
+
+   59. size: 100, 50
+
+   60.
+
+   61.<MyWidget>:
+
+   62.   MyButton:
+
+   63.   text: 'Hello'
+
+   64.   pos: root.x, root.top - self.height
+
+   65. MyButton:
+
+   66.   text: 'World!'
+
+   67.   pos: root.right - self.width, root.y
+
+
+在widgets2.kv中我们创建了（<MyBUtton@BUtton>：）	自定义了MyButton这个类（56到59行），以及对象（62到67行）。	
+请注意 我们定义MyWidget和MyButton的不同。如果我们不是像在MyWidget（widgets.py的32行）中一样	在Python中定义父类，那么我们只需要声明一下@Class,也就是说我们不得不在Python中定义MyWidget，是因为在python中直接实例化对象（widgets.py中第37行）。
+
+在这个例子中，每个按钮都精确反应了他们将会显示在屏幕的位置，无论这个屏幕的尺寸大小是多少。为了达到这个目的，我们需要使用self 和 root变量。你可能对self变量很熟。和你所想的一样，就是参照widget本身。例如self.height(在第64行)值为50，它是指的MyButton的高度。root变量指的是以根节点上的widget为参照物。例如，第64行的 root.x值为0，因为它对应的是widgets.py中第37行创建的MyWidget对象的X轴坐标。因为MyWidget对象是在WIdgetsApp中唯一一个对象，它默认占用了所有空间，所以初始点是（0，0），x,y,height,width都是widgets的属性。（root，self其实都是widgets对象）
+然而固定的坐标去组织widgets和窗口中的元素elements 是一个很低效的方法。我们可以采用更加明智的方法：layouts。
+
+Layouts
+毫不疑问固定的坐标在 绝对的空间里是最灵活的组织各种元素的方式，不过它非常耗时。Kivy提供了一套  layouts 来替代它，layouts让调用widgets变得更加便利。Layout其实是widget的子类，它实现了不同的策略去组织各种被内嵌进来的widgets，例如一种策略：按照网格形式去组织widget（GridLayout）。
+让我们来写一个关于FloatLayout的简单例子吧。它起的作用就和我们直接在另一个widgets里组织其他widgets一样。唯一不同的是，我们可以使用成比例的坐标（占用屏幕总尺寸的比例），而不是使用固定的坐标（精确像素点）。这意味着我们不用向前面的章节中那样去计算需要多少像素点。下面是对应的代码：					
+   68. # File name: floatlayout.py
+   69.
+   70. from kivy.app import App
+   71. from kivy.uix.floatlayout import FloatLayout
+   72.					
+   73. class FloatLayoutApp(App):
+   74.   def build(self):
+   75.     return FloatLayout()
+   76.  					
+   77. if __name__=="__main__":
+   78.   FloatLayoutApp().run()
+以上的代码中几乎没有什么新的东西，除了使用了FloatLayout之外（75行），真正有趣的地方在kivy language中（floatlayout.kv）:
+					
+79. # File name: floatlayout.py
+80. <Button>:
+81.    color: .8,.9,0,1
+82.    font_size: 32
+83.    size_hint: .4, .3
+84.					
+85. <FloatLayout>:					
+86.      Button:
+87.         text: 'Hello'
+88.         pos_hint: {'x': 0, 'top': 1}
+89.      Button:
+90.         text: 'World!'
+91.         pos_hint: {'right': 1, 'y': 0}
+在floatlayout.kv中我们使用了两个新的属性，size_hint 和pos_hint，它们通过0到1之间的值来表示坐标的比例，（0，0）表示底部最左边，（1，1）表示顶部最右边，例如第83行所表示的，设置宽度为当前屏幕的40%，高度为当前屏幕的30%，pos_hint和size_hint一样，只不过他是表示的位置罢了。 这就像是Python中的字典一样，它的key值（如88行括号中的x，top）代表了 这是对应的widget中的哪一个部分，例如x是屏幕的左边界，你一定注意到了，我们这里有时候没有用y来表示顶部边界，而是用top，第91行也没有用x来表示，而是用的right。 top和right属性各自代表Button按钮的顶部和右边界，也就是说button的顶部是位于屏幕高度100%这个位置，第二个button的右边界是位于整个屏幕宽度的100%位置。这样使得定位更加方便。这意味着，我们没必要总在两个轴上用x，y。
+例如在91行的 pos_hint: {‘x’: .85,’y’:0} 需要计算第二个按钮的左边界在x轴的什么位置，right 和top这两个key可以避免一些计算 使得代码更简单。下面的截图说明了以上代码的运行结果，以及一些常用的key值。
+374A85BB-FF07-434D-B636-6ED79BEB60D2.png
+
+
+pos_hint 的key值可以设为 （x,center_x,  right, y , center_y  ,top） 这些key 对于  在布局中对齐边缘和 居中 很有效果，例如，pos_hint：{‘center_x’：.5,’center_y’:.5}	 它将会让这个widget始终和界面居中，无论这个界面尺寸为多少（相当于android中的相对布局 居中）。			
+
+在固定的位置上使用top和right可行吗（就像64和67行一样）？是的，当然可以。但是需要注意的是， pos 属性并不支持python中的 字典  结构{‘x’:0,’y’:0}。
+
+也就是说 pos相当于是一个 key值被固定的字典，他的key值只能是 x和y，代表的是图形（比如说button）的左下角的那一个点的坐标。所以，相比起用pos属性，我们更倾向于使用x,center_x,right,y,center_y还有 top这些属性。例如：pos属性为root.x,root.top-self.height    ,我们可以使用以下代码来代替：
+x:0      top:root.height
+
+需要注意的是这些属性所声明的都是 固定的值（pixels像素），而不是成比例的。
+				
+ 
+TIPS:
+如果我们想要使用成比例 的坐标系，我们可以在意个layout中使用pos_hint属性。
+
+如果我们正在使用一个layout对象，我们可以强制使用一个固定的值么？的确可以，但是如果不仔细使用其他属性的话  这样做会产生冲突。当我们在使用layout的时候，总是会优先使用pos_hint,   size_hint, 如果我们必须使用固定的位置属性（pos,x,y,center_x,center_y,top,right）的话，就要确定在layout里面的其他地方 没有使用过 相对的一些属性（pos_hint  ,size_hint）.其次，如果我们想要使用height  ，width，size等属性的时候，我们需要在 要设置固定值的那一个坐标轴上将size_hint的值设置为None，  例如：
+size_hint:(None,.10), 允许使用height属性，而它要保持宽度为屏幕宽度的10%
+
+
+
+		
+
+	
+
+				
+
+			
+
+		
+
+	
+
+
+				
+
+			
+
+		
+
+	
+
+
+				
+
+			
+
+		
+
+	
+				
+
+					
+
+				
+
+			
+
+		
+
+	
+			
+
+		
+
+	
+
+
+
+
+
+
+				
+
+		
+	
+
+		
+
+	
+				
+
+			
+
+		
+
+	
+
+
+
+
+
+
+
+
+
+
+
